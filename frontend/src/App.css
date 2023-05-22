@@ -1,106 +1,76 @@
-.App {
-  text-align: center;
+html,
+body,
+#root {
+  height: 100%;
+}
+*:focus {
+  border-color: none !important;
+  box-shadow: none !important;
+}
+body {
+  background-image: url("./assets/golden_gate.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+#root {
+  background-color: rgba(163, 151, 122, 0.6);
+  background-blend-mode: multiply;
+}
+.todo-input {
+  margin-top: 35vh;
+}
+.todo-items {
+  flex-direction: row;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.right {
+  float: right;
+}
+.dropdown-toggle::after {
+  display: none !important;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.rounded-checkbox input {
+  border-radius: 50% !important;
+  margin-right: 10px;
+  border-color: #a3977a !important;
+  cursor: pointer !important;
+}
+.rounded-checkbox input:checked {
+  background-color: #a3977a !important;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.todo-body-list {
+  padding: 0 !important;
+  margin-top: 10px;
 }
 
-.App-link {
-  color: #61dafb;
+.todo-body-list-card {
+  background-color: transparent !important;
+  border: none !important;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.accordion-header {
+  /* background-color: rgba(163, 151, 122, 0.7) !important; */
+  /* border: none !important; */
+  border-radius: var(--bs-card-inner-border-radius) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+.accordion-header button {
+  color: white !important;
+  background-color: transparent !important;
+  font-weight: 500 !important;
+}
+.accordion-collapse {
+  background-color: none !important;
 }
 
-
-
-/* Styling for the main container */
-.app-container {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-/* Styling for the input field */
-.task-input {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-/* Styling for the add button */
 .add-button {
-  padding: 8px 16px;
-  font-size: 16px;
-  background-color: #4caf50;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.add-button:hover {
-  background-color: #45a049;
-}
-
-/* Styling for the task list */
-.task-list {
-  list-style-type: none;
-  padding: 0;
-}
-
-/* Styling for each task item */
-.task-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-/* Styling for the task text */
-.task-text {
-  flex-grow: 1;
-  margin-right: 8px;
-}
-
-/* Styling for the delete button */
-.delete-button {
-  padding: 4px 8px;
-  font-size: 14px;
-  background-color: #f44336;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.delete-button:hover {
-  background-color: #d32f2f;
+  background-color: #d46c6c !important;
+  border-color: #d46c6c !important;
+  padding-left: 30px !important;
+  padding-right: 30px !important;
 }

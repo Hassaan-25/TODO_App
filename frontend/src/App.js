@@ -1,78 +1,157 @@
 import React, { useState, useEffect } from "react";
+import { isToday, isYesterday, isTomorrow, format } from "date-fns";
+import axios from "axios";
+import {
+  Container,
+  InputGroup,
+  FormControl,
+  Button,
+  Row,
+  Col,
+  ListGroup,
+  Dropdown,
+  Form,
+  Accordion,
+  Card,
+} from "react-bootstrap";
 import "./App.css";
-import { fetchTasks } from "./helpers/api";
-import axiosInstance from "./helpers/api.config";
+import "bootstrap/dist/css/bootstrap.css";
 
-const App = () => {
+function App() {
   const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState("");
+  const [task, setTask] = useState("");
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+
+    if (isToday(date)) {
+      return "today";
+    } else if (isYesterday(date)) {
+      return "yesterday";
+    } else if (isTomorrow(date)) {
+      return "tomorrow";
+    } else {
+      // Format the date to a string if it's not today, yesterday, or tomorrow
+      return format(date, "yyyy-MM-dd");
+    }
+  };
 
   useEffect(() => {
-    fetchTasks();
+    getTasks();
   }, []);
 
+  const getTasks = async () => {
+    const res = await axios.get("http://localhost:5000/tasks");
+    setTasks(res.data);
+  };
+
   const addTask = async () => {
-    if (newTask.trim() === "") return;
-
-    try {
-      const response = await axiosInstance.post("/tasks", {
-        task: newTask,
-      });
-      setTasks([...tasks, response.data]);
-      setNewTask("");
-    } catch (error) {
-      console.error("Error adding task:", error);
+    if (task) {
+      const newTask = {
+        task,
+        completed: false,
+        creationTime: new Date(),
+      };
+      const res = await axios.post("http://localhost:5000/tasks", newTask);
+      setTasks([...tasks, res.data]);
+      setTask("");
     }
   };
 
-  const deleteTask = async (taskId) => {
-    try {
-      await axiosInstance.delete(`/tasks/${taskId}`);
-      const updatedTasks = tasks.filter((task) => task._id !== taskId);
-      setTasks(updatedTasks);
-    } catch (error) {
-      console.error("Error deleting task:", error);
-    }
+  const deleteTask = async (id) => {
+    await axios.delete(`http://localhost:5000/tasks/${id}`);
+    setTasks(tasks.filter((task) => task._id !== id));
   };
 
-  const handleKeyDown = (event) => {
+  const completeTask = async (id) => {
+    const taskToUpdate = tasks.find((task) => task._id === id);
+    taskToUpdate.completed = !taskToUpdate.completed;
+    await axios.put(`http://localhost:5000/tasks/${id}`, taskToUpdate);
+    setTasks([...tasks]);
+  };
+
+  const handleKeyPress = (event) => {
     if (event.key === "Enter") {
       addTask();
     }
   };
 
-  return (
-    <div className="app-container">
-      <h1>TODO App</h1>
-      <div className="input-container">
-        <input
-          type="text"
-          className="task-input"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Enter a task..."
-        />
-        <button className="add-button" onClick={addTask}>
-          Add
-        </button>
-      </div>
+  // Group tasks by date
+  const tasksByDate = tasks.reduce((groups, task) => {
+    const date = task.creationTime.split("T")[0];
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(task);
+    return groups;
+  }, {});
 
-      <ul className="task-list">
-        {tasks.map((task) => (
-          <li key={task._id} className="task-item">
-            <span className="task-text">{task.task}</span>
-            <button
-              className="delete-button"
-              onClick={() => deleteTask(task._id)}
-            >
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
+  const taskDates = Object.keys(tasksByDate).sort(
+    (a, b) => new Date(b) - new Date(a)
   );
-};
+
+  return (
+    <Container>
+      <Row>
+        <Col md={{ span: "6", offset: "3" }}>
+          <InputGroup className="mb-3 todo-input">
+            <FormControl
+              placeholder="Add a task"
+              type="text"
+              value={task}
+              onChange={(e) => setTask(e.target.value)}
+              onKeyPress={handleKeyPress}
+            />
+            <Button onClick={addTask} className="add-button">
+              Add
+            </Button>
+          </InputGroup>
+
+          <Accordion defaultActiveKey="0">
+            {taskDates.map((date, idx) => (
+              <Card className="todo-body-list-card">
+                <Accordion.Header as={Card.Header} eventKey={idx.toString()}>
+                  To do on {formatDate(date)}
+                </Accordion.Header>
+                <Accordion.Body
+                  eventKey={idx.toString()}
+                  className="todo-body-list"
+                >
+                  <ListGroup>
+                    {tasksByDate[date].map((task) => (
+                      <ListGroup.Item
+                        key={task._id}
+                        className="todo-items d-flex align-items-center justify-content-between"
+                      >
+                        <div>
+                          <Form.Check
+                            type="checkbox"
+                            checked={task.completed}
+                            onChange={() => completeTask(task._id)}
+                            className="d-inline rounded-checkbox"
+                          />
+                          {task.task}
+                        </div>
+                        <Dropdown align="end" className="d-inline right">
+                          <Dropdown.Toggle variant="none" id="dropdown-basic">
+                            ⫶⫶
+                          </Dropdown.Toggle>
+                          <Dropdown.Menu>
+                            <Dropdown.Item onClick={() => deleteTask(task._id)}>
+                              Delete
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown>
+                      </ListGroup.Item>
+                    ))}
+                  </ListGroup>
+                </Accordion.Body>
+              </Card>
+            ))}
+          </Accordion>
+        </Col>
+      </Row>
+    </Container>
+  );
+}
 
 export default App;

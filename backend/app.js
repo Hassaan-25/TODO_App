@@ -1,66 +1,36 @@
-const express = require("express");
+var express = require("express");
+var path = require("path");
+var cookieParser = require("cookie-parser");
+var logger = require("morgan");
+
+var indexRouter = require("./routes/index");
+var usersRouter = require("./routes/users");
+
+const cors = require("cors");
+const corsOptions = {
+  origin: process.env.APP_URL || "http://localhost:3000",
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200
+};
+
 const mongoose = require("mongoose");
 
-const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Connect to the database
-mongoose.connect("mongodb://localhost:27017/TODO_App", {
+mongoose.connect(process.env.DATABASE_URL || "mongodb://localhost/todoDB", {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "MongoDB connection error:"));
-
-// Define the task schema and model
-const taskSchema = new mongoose.Schema({
-  task: { type: String, required: true },
-  completed: { type: Boolean, default: false },
-  completedTime: { type: Date },
-  creationTime: { type: Date, default: Date.now },
+  useUnifiedTopology: true
 });
 
-const Task = mongoose.model("Task", taskSchema);
+const tasksRouter = require("./routes/tasks");
 
-// Middleware to parse JSON bodies
+var app = express();
 app.use(express.json());
+app.use("/tasks", tasksRouter);
+app.use(cors(corsOptions));
+app.use(logger("dev"));
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "public")));
 
-// API routes
-app.get("/api/tasks", async (req, res) => {
-  try {
-    const tasks = await Task.find();
-    res.json(tasks);
-  } catch (error) {
-    console.error("Error fetching tasks:", error);
-    res.status(500).json({ error: "Failed to fetch tasks" });
-  }
-});
-
-app.post("/api/tasks", async (req, res) => {
-  try {
-    const { task } = req.body;
-    const newTask = new Task({ task });
-    const savedTask = await newTask.save();
-    res.status(201).json(savedTask);
-  } catch (error) {
-    console.error("Error adding task:", error);
-    res.status(500).json({ error: "Failed to add task" });
-  }
-});
-
-app.delete("/api/tasks/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    // Assuming you're using Mongoose for the database
-    await Task.findByIdAndDelete(id);
-    res.sendStatus(204);
-  } catch (error) {
-    console.error("Error deleting task:", error);
-    res.status(500).json({ error: "Failed to delete task" });
-  }
-});
-
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.use("/", indexRouter);
+app.use("/users", usersRouter);
+module.exports = app;
