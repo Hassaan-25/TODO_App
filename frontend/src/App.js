@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { isToday, isYesterday, isTomorrow, format } from "date-fns";
-import axios from "axios";
 import {
   Container,
   InputGroup,
@@ -16,6 +15,7 @@ import {
 } from "react-bootstrap";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.css";
+import axiosInstance from "./helpers/api";
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -40,7 +40,7 @@ function App() {
   }, []);
 
   const getTasks = async () => {
-    const res = await axios.get("http://localhost:5000/tasks");
+    const res = await axiosInstance.get("/tasks");
     setTasks(res.data);
   };
 
@@ -51,21 +51,21 @@ function App() {
         completed: false,
         creationTime: new Date(),
       };
-      const res = await axios.post("http://localhost:5000/tasks", newTask);
+      const res = await axiosInstance.post("/tasks", newTask);
       setTasks([...tasks, res.data]);
       setTask("");
     }
   };
 
   const deleteTask = async (id) => {
-    await axios.delete(`http://localhost:5000/tasks/${id}`);
+    await axiosInstance.delete(`/tasks/${id}`);
     setTasks(tasks.filter((task) => task._id !== id));
   };
 
   const completeTask = async (id) => {
     const taskToUpdate = tasks.find((task) => task._id === id);
     taskToUpdate.completed = !taskToUpdate.completed;
-    await axios.put(`http://localhost:5000/tasks/${id}`, taskToUpdate);
+    await axiosInstance.put(`/tasks/${id}`, taskToUpdate);
     setTasks([...tasks]);
   };
 
@@ -133,7 +133,7 @@ function App() {
                         </div>
                         <Dropdown align="end" className="d-inline right">
                           <Dropdown.Toggle variant="none" id="dropdown-basic">
-                            ⫶⫶
+                            ⫶⫶⫶
                           </Dropdown.Toggle>
                           <Dropdown.Menu>
                             <Dropdown.Item onClick={() => deleteTask(task._id)}>
