@@ -28,6 +28,8 @@ Before running the application, make sure you have the following installed:
 - npm install
 - npm start
 
+The Application will run on Port 80,
+
 ### backend
 
 - cd backend

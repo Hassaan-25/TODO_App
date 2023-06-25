@@ -20,6 +20,7 @@ import axiosInstance from "./helpers/api";
 function App() {
   const [tasks, setTasks] = useState([]);
   const [task, setTask] = useState("");
+  const Swal = require("sweetalert2");
   const formatDate = (dateString) => {
     const date = new Date(dateString);
 
@@ -51,24 +52,41 @@ function App() {
         completed: false,
         creationTime: new Date(),
       };
-      const res = await axiosInstance.post("/tasks", newTask);
-      setTasks([...tasks, res.data]);
-      setTask("");
+      try {
+        const res = await axiosInstance.post("/tasks", newTask);
+        setTasks([...tasks, res.data]);
+        setTask("");
+        Swal.fire("Good job!", "Task added successfully!", "success");
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
   const deleteTask = async (id) => {
-    await axiosInstance.delete(`/tasks/${id}`);
-    setTasks(tasks.filter((task) => task._id !== id));
+    try {
+      await axiosInstance.delete(`/tasks/${id}`);
+      setTasks(tasks.filter((task) => task._id !== id));
+      Swal.fire("Deleted!", "Task deleted successfully!", "success");
+    } catch (error) {
+      console.error(error);
+    }
   };
-
   const completeTask = async (id) => {
     const taskToUpdate = tasks.find((task) => task._id === id);
     taskToUpdate.completed = !taskToUpdate.completed;
-    await axiosInstance.put(`/tasks/${id}`, taskToUpdate);
-    setTasks([...tasks]);
+    try {
+      await axiosInstance.put(`/tasks/${id}`, taskToUpdate);
+      setTasks([...tasks]);
+      Swal.fire(
+        "Task Completed!",
+        "The task status has been updated successfully.",
+        "success"
+      );
+    } catch (error) {
+      console.error(error);
+    }
   };
-
   const handleKeyPress = (event) => {
     if (event.key === "Enter") {
       addTask();
